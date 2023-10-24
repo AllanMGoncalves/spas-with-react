@@ -1,7 +1,8 @@
 import { useContext } from 'react'
-import { HistoryContainer, HistoryList, Status } from './styles'
+import { EmptyStatus, HistoryContainer, HistoryList, Status } from './styles'
 import { formatDistanceToNow } from 'date-fns'
 import { CyclesContext } from '../../contexts/CyclesContext'
+import { Scroll } from 'phosphor-react'
 
 export function History() {
   const { cycles } = useContext(CyclesContext)
@@ -9,46 +10,56 @@ export function History() {
   return (
     <HistoryContainer>
       <h1>My History</h1>
-      <HistoryList>
-        <table>
-          <thead>
-            <tr>
-              <th>Task</th>
-              <th>Duration</th>
-              <th>Start</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {cycles.map((cycle) => {
-              return (
-                <tr key={cycle.id}>
-                  <td>{cycle.task}</td>
-                  <td>{cycle.minutesAmount} minutes</td>
-                  <td>
-                    {formatDistanceToNow(cycle.startDate, {
-                      addSuffix: true,
-                    })}
-                  </td>
-                  <td>
-                    {cycle.finishedDate && (
-                      <Status statusColor="green">Completed</Status>
-                    )}
 
-                    {cycle.interruptDate && (
-                      <Status statusColor="red">Interrupted</Status>
-                    )}
+      {cycles.length >= 1 ? (
+        <HistoryList>
+          <table>
+            <thead>
+              <tr>
+                <th>Task</th>
+                <th>Duration</th>
+                <th>Start</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {cycles.map((cycle) => {
+                return (
+                  <tr key={cycle.id}>
+                    <td>{cycle.task}</td>
+                    <td>{cycle.minutesAmount} minutes</td>
+                    <td>
+                      {formatDistanceToNow(new Date(cycle.startDate), {
+                        addSuffix: true,
+                      })}
+                    </td>
+                    <td>
+                      {cycle.finishedDate && (
+                        <Status statusColor="green">Completed</Status>
+                      )}
 
-                    {!cycle.finishedDate && !cycle.interruptDate && (
-                      <Status statusColor="yellow">In progress</Status>
-                    )}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </HistoryList>
+                      {cycle.interruptDate && (
+                        <Status statusColor="red">Interrupted</Status>
+                      )}
+
+                      {!cycle.finishedDate && !cycle.interruptDate && (
+                        <Status statusColor="yellow">In progress</Status>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </HistoryList>
+      ) : (
+        <EmptyStatus>
+          <Scroll size={64} />
+          <p>
+            There is no <span>Cycles</span> registred
+          </p>
+        </EmptyStatus>
+      )}
     </HistoryContainer>
   )
 }

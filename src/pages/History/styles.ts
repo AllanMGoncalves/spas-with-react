@@ -87,3 +87,23 @@ export const Status = styled.span<StatusProps>`
     background: ${(props) => props.theme[STATUS_COLOR[props.statusColor]]};
   }
 `
+
+export const EmptyStatus = styled.div`
+  display: flex;
+  flex: 1 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: ${(props) => props.theme['gray-400']};
+
+  p {
+    margin-top: 1rem;
+    font-size: 1.5rem;
+    color: ${(props) => props.theme['gray-400']};
+
+    span {
+      font-weight: bold;
+      color: ${(props) => props.theme['gray-300']};
+    }
+  }
+`
