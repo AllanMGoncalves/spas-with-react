@@ -1,20 +1,18 @@
-import { v4 as uuidv4 } from 'uuid'
-
-import { useForm } from 'react-hook-form'
+import { PlayCircle, StopCircle } from 'phosphor-react'
+import { FormProvider, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as zod from 'zod'
+import { useContext } from 'react'
 
-import { PlayCircle } from 'phosphor-react'
 import {
   HomeContainer,
-  FormContainer,
-  CountdownContainer,
-  Separator,
   StartCountdownButton,
-  TaskInput,
-  MinutesAmountInput,
+  StopCountdownButton,
 } from './styles'
-import { useState } from 'react'
+
+import { NewCycleForm } from './components/NewCycleForm'
+import { Countdown } from './components/Countdown'
+import { CyclesContext } from '../../contexts/CyclesContext'
 
 const newCycleFormValidationSchema = zod.object({
   task: zod.string().min(1, 'Report the task'),
@@ -23,16 +21,11 @@ const newCycleFormValidationSchema = zod.object({
 
 type NewCycleFormData = zod.infer<typeof newCycleFormValidationSchema>
 
-interface Cycle {
-  id: string
-  task: string
-  minutesAmount: number
-}
-
 export function Home() {
-  const [cycles, setCycles] = useState<Cycle[]>([])
+  const { activeCycle, createNewCycle, interruptCurrentCycle } =
+    useContext(CyclesContext)
 
-  const { register, handleSubmit, watch, reset } = useForm<NewCycleFormData>({
+  const newCycleForm = useForm<NewCycleFormData>({
     resolver: zodResolver(newCycleFormValidationSchema),
     defaultValues: {
       task: '',
@@ -40,12 +33,10 @@ export function Home() {
     },
   })
 
+  const { handleSubmit, watch, reset } = newCycleForm
+
   function handleCreateNewCycle(data: NewCycleFormData) {
-    const newCycle: Cycle = {
-      id: uuidv4(),
-      task: data.task,
-      minutesAmount: data.minutesAmount,
-    }
+    createNewCycle(data)
     reset()
   }
 
@@ -55,48 +46,20 @@ export function Home() {
   return (
     <HomeContainer>
       <form onSubmit={handleSubmit(handleCreateNewCycle)} action="">
-        <FormContainer>
-          <label htmlFor="task">I will work on</label>
-          <TaskInput
-            type="text"
-            list="task-suggestion"
-            id="task"
-            placeholder="Name your project"
-            {...register('task')}
-          />
+        <FormProvider {...newCycleForm}>
+          <NewCycleForm />
+        </FormProvider>
+        <Countdown />
 
-          <datalist id="task-suggestion">
-            <option value="Project Name 01" />
-            <option value="Project Name 02" />
-            <option value="Project Name 03" />
-            <option value="Project Name 04" />
-          </datalist>
-
-          <label htmlFor="minutesAmount">during</label>
-          <MinutesAmountInput
-            type="number"
-            id="minutesAmount"
-            placeholder="00"
-            step={5}
-            min={5}
-            max={60}
-            {...register('minutesAmount', { valueAsNumber: true })}
-          />
-
-          <span>minutes</span>
-        </FormContainer>
-
-        <CountdownContainer>
-          <span>0</span>
-          <span>0</span>
-          <Separator>:</Separator>
-          <span>0</span>
-          <span>0</span>
-        </CountdownContainer>
-
-        <StartCountdownButton disabled={isDisabled} type="submit">
-          <PlayCircle size={24} /> Start
-        </StartCountdownButton>
+        {activeCycle ? (
+          <StopCountdownButton type="button" onClick={interruptCurrentCycle}>
+            <StopCircle size={32} /> Stop
+          </StopCountdownButton>
+        ) : (
+          <StartCountdownButton disabled={isDisabled} type="submit">
+            <PlayCircle size={32} /> Start
+          </StartCountdownButton>
+        )}
       </form>
     </HomeContainer>
   )
